@@ -27,6 +27,17 @@ TARGET_APPLICATIONS_DIR="/usr/share/applications"
 USER_DESKTOPS_DIR="/home"
 NUM_SHORTCUTS=3  # Number of shortcut files (adjust this as necessary)
 
+# Colors for printing
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[0;37m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
 # Parse command-line arguments
 while getopts "y" opt; do
   case ${opt} in
@@ -41,7 +52,7 @@ done
 
 # Security check: Ensure script is run by root user
 if [ "$(id -u)" -ne 0 ]; then
-  echo "ERROR: This script must be run as root!" >&2
+  echo -e "${RED}ERROR: This script must be run as root!${RESET}" >&2
   exit 1
 fi
 
@@ -60,47 +71,47 @@ set_permissions() {
 
 # If confirmation is required, prompt for user confirmation to proceed after reading the security warning
 if [ "$SKIP_CONFIRMATION" != true ]; then
-  echo "WARNING: Please review the security guidelines before proceeding."
-  echo "Ensure that you have inspected the contents of all files to be copied and linked."
+  echo -e "${YELLOW}WARNING: Please review the security guidelines before proceeding."
+  echo "Ensure that you have inspected the contents of all files to be copied and linked.${RESET}"
   read -p "Do you wish to proceed with the installation (yes/no)? " proceed
   if [[ "$proceed" != "yes" ]]; then
-    echo "Installation aborted. Please review the security guidelines and try again later."
+    echo -e "${RED}Installation aborted. Please review the security guidelines and try again later.${RESET}"
     exit 0
   fi
 fi
 
 # Step 1: Move the virtual display manager directory to /opt
-echo "Moving virtual display manager directory to /opt..."
+echo -e "${BLUE}Moving virtual display manager directory to /opt...${RESET}"
 if [ ! -d "$VIRTUAL_DISPLAY_MANAGER_DIR" ]; then
-  echo "ERROR: Source directory $VIRTUAL_DISPLAY_MANAGER_DIR not found!" >&2
+  echo -e "${RED}ERROR: Source directory $VIRTUAL_DISPLAY_MANAGER_DIR not found!${RESET}" >&2
   exit 1
 fi
 
 # Security check: Inspect files before moving
-echo "WARNING: Ensure that the contents of $VIRTUAL_DISPLAY_MANAGER_DIR have been reviewed and are safe."
-echo "Do not proceed if you're unsure about the contents of these files."
+echo -e "${YELLOW}WARNING: Ensure that the contents of $VIRTUAL_DISPLAY_MANAGER_DIR have been reviewed and are safe."
+echo "Do not proceed if you're unsure about the contents of these files.${RESET}"
 
 mv "$VIRTUAL_DISPLAY_MANAGER_DIR" "$TARGET_VIRTUAL_DISPLAY_MANAGER_DIR"
 set_permissions "$TARGET_VIRTUAL_DISPLAY_MANAGER_DIR"
 
 # Step 2: Copy the .desktop shortcut files to /usr/share/applications
-echo "Copying .desktop files to /usr/share/applications..."
+echo -e "${BLUE}Copying .desktop files to /usr/share/applications...${RESET}"
 for i in $(seq 1 $NUM_SHORTCUTS); do
   SHORTCUT="$SHORTCUTS_DIR/xrandr_setup_$i.desktop"
   if [ -f "$SHORTCUT" ]; then
     # Security check: Ensure the .desktop files are safe
-    echo "WARNING: Ensure that the contents of $SHORTCUT have been reviewed before proceeding."
-    echo "Do not proceed if you're unsure about the contents of these files."
+    echo -e "${YELLOW}WARNING: Ensure that the contents of $SHORTCUT have been reviewed before proceeding."
+    echo "Do not proceed if you're unsure about the contents of these files.${RESET}"
     
     cp "$SHORTCUT" "$TARGET_APPLICATIONS_DIR/"
     set_permissions "$TARGET_APPLICATIONS_DIR/xrandr_setup_$i.desktop"
   else
-    echo "ERROR: $SHORTCUT not found. Skipping..."
+    echo -e "${RED}ERROR: $SHORTCUT not found. Skipping...${RESET}"
   fi
 done
 
 # Step 3: Create symbolic links for each user
-echo "Creating symbolic links for each user..."
+echo -e "${BLUE}Creating symbolic links for each user...${RESET}"
 for user_home in "$USER_DESKTOPS_DIR"/*/; do
   if [ -d "$user_home/Desktop" ]; then
     username=$(basename "$user_home")  # Extract username from the home directory path
@@ -109,7 +120,7 @@ for user_home in "$USER_DESKTOPS_DIR"/*/; do
       if [ -f "$SHORTCUT" ]; then
         # Security check: Prevent symlink creation for unknown files
         if ! grep -q "xrandr_setup_$i.desktop" <<< "$SHORTCUT"; then
-          echo "ERROR: Unknown shortcut detected. Skipping symlink creation..."
+          echo -e "${RED}ERROR: Unknown shortcut detected. Skipping symlink creation...${RESET}"
           continue
         fi
         
@@ -120,22 +131,20 @@ for user_home in "$USER_DESKTOPS_DIR"/*/; do
         # Use the username to set ownership correctly
         chown "$username:$username" "$user_home/Desktop/xrandr_setup_$i.desktop"
       else
-        echo "ERROR: $SHORTCUT not found. Skipping symlink creation..."
+        echo -e "${RED}ERROR: $SHORTCUT not found. Skipping symlink creation...${RESET}"
       fi
     done
   fi
 done
 
-
-
 # Final Security Recommendations
-echo "Installation complete!"
-echo "SECURITY RECOMMENDATIONS:"
+echo -e "${GREEN}Installation complete!${RESET}"
+echo -e "${CYAN}SECURITY RECOMMENDATIONS:${RESET}"
 echo "1. Ensure that the files in $TARGET_APPLICATIONS_DIR have proper security settings."
 echo "2. Review and audit all symlinked files on users' desktops to ensure there are no unintended files."
 echo "3. Ensure that only trusted users have write permissions in the directories where these files reside."
 echo ""
-echo "USAGE EXPLANATION:"
+echo -e "${CYAN}USAGE EXPLANATION:${RESET}"
 echo "1. xrandr_setup_1.desktop: Resets your display setup to 1 display."
 echo "2. xrandr_setup_2.desktop: Configures your system to use 2 displays."
 echo "3. xrandr_setup_3.desktop: Sets up 3 displays."
