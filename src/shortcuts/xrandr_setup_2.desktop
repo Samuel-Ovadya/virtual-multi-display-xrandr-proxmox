@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=2 Displays Setup
+Comment=emulate 2 virtual displays
+Exec=/bin/bash /opt/virtual-display-manager/xrandr_setup_2.sh
+Icon=preferences-desktop-display
+Terminal=false
+Type=Application
+Categories=Utility;

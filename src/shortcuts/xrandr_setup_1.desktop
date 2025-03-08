@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=1 Display Setup
+Comment=reset the virtual displays to 1 
+Exec=/bin/bash /opt/virtual-display-manager/xrandr_setup_1.sh
+Icon=preferences-desktop-display
+Terminal=false
+Type=Application
+Categories=Utility;
