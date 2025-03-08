@@ -36,7 +36,7 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 BOLD='\033[1m'
-RESET='\033[0m'
+RESET=''
 
 # Parse command-line arguments
 while getopts "y" opt; do
@@ -91,7 +91,8 @@ fi
 echo -e "${YELLOW}WARNING: Ensure that the contents of $VIRTUAL_DISPLAY_MANAGER_DIR have been reviewed and are safe."
 echo "Do not proceed if you're unsure about the contents of these files.${RESET}"
 
-mv "$VIRTUAL_DISPLAY_MANAGER_DIR" "$TARGET_VIRTUAL_DISPLAY_MANAGER_DIR"
+
+cp "$VIRTUAL_DISPLAY_MANAGER_DIR/*" "$TARGET_VIRTUAL_DISPLAY_MANAGER_DIR"
 set_permissions "$TARGET_VIRTUAL_DISPLAY_MANAGER_DIR"
 
 # Step 2: Copy the .desktop shortcut files to /usr/share/applications
