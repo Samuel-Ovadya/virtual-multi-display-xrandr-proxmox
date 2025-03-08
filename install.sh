@@ -99,7 +99,7 @@ for i in $(seq 1 $NUM_SHORTCUTS); do
   fi
 done
 
-# Step 3: Create symbolic links on each user's Desktop
+# Step 3: Create symbolic links for each user
 echo "Creating symbolic links for each user..."
 for user_home in "$USER_DESKTOPS_DIR"/*/; do
   if [ -d "$user_home/Desktop" ]; then
@@ -112,7 +112,8 @@ for user_home in "$USER_DESKTOPS_DIR"/*/; do
           continue
         fi
         
-        ln -s "$SHORTCUT" "$user_home/Desktop/xrandr_setup_$i.desktop"
+        # Overwrite existing symlinks or files on the Desktop
+        ln -sf "$SHORTCUT" "$user_home/Desktop/xrandr_setup_$i.desktop"
         chmod 755 "$user_home/Desktop/xrandr_setup_$i.desktop"
         chown "$user_home" "$user_home/Desktop/xrandr_setup_$i.desktop"
       else
@@ -121,6 +122,7 @@ for user_home in "$USER_DESKTOPS_DIR"/*/; do
     done
   fi
 done
+
 
 # Final Security Recommendations
 echo "Installation complete!"
