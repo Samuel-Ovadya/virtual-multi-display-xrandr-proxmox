@@ -103,6 +103,7 @@ done
 echo "Creating symbolic links for each user..."
 for user_home in "$USER_DESKTOPS_DIR"/*/; do
   if [ -d "$user_home/Desktop" ]; then
+    username=$(basename "$user_home")  # Extract username from the home directory path
     for i in $(seq 1 $NUM_SHORTCUTS); do
       SHORTCUT="$TARGET_APPLICATIONS_DIR/xrandr_setup_$i.desktop"
       if [ -f "$SHORTCUT" ]; then
@@ -115,13 +116,16 @@ for user_home in "$USER_DESKTOPS_DIR"/*/; do
         # Overwrite existing symlinks or files on the Desktop
         ln -sf "$SHORTCUT" "$user_home/Desktop/xrandr_setup_$i.desktop"
         chmod 755 "$user_home/Desktop/xrandr_setup_$i.desktop"
-        chown "$user_home" "$user_home/Desktop/xrandr_setup_$i.desktop"
+        
+        # Use the username to set ownership correctly
+        chown "$username:$username" "$user_home/Desktop/xrandr_setup_$i.desktop"
       else
         echo "ERROR: $SHORTCUT not found. Skipping symlink creation..."
       fi
     done
   fi
 done
+
 
 
 # Final Security Recommendations
