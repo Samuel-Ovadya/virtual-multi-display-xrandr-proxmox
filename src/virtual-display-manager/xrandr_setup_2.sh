@@ -1,15 +1,40 @@
 #!/bin/bash
 
-# Run the initial xrandr setup script to reset display settings 
-# (disconnecting all except Virtual-1 or the primary display)
+echo "Running initial xrandr setup..."
 ./xrandr_setup_1.sh 
 
-# Re-enable Virtual-2 with the desired resolution
-xrandr --addmode Virtual-2 1920x1080 
+# Get the resolution of Virtual-1
+resolution=$(xrandr | grep -w "Virtual-1 connected" | awk '{print $3}' | cut -d '+' -f1)
+width=$(echo $resolution | cut -d 'x' -f1)
+height=$(echo $resolution | cut -d 'x' -f2)
 
-# Set the framebuffer to accommodate both Virtual-1 and Virtual-2
-xrandr --fb 3840x1080 --output Virtual-1 --pos 1920x0 --panning 1920x1080/3840x1080 
+# Check if we successfully retrieved the resolution
+if [ -z "$width" ] || [ -z "$height" ]; then
+    echo "Error: Failed to get resolution of Virtual-1"
+    exit 1
+fi
+
+echo "Detected Virtual-1 resolution: ${width}x${height}"
+
+# Calculate new framebuffer size (2x width of Virtual-1)
+new_fb_width=$((width * 2))
+new_fb_height=$height
+
+echo "Calculated framebuffer size: ${new_fb_width}x${new_fb_height}"
+
+# Add mode for Virtual-2 with the same resolution as Virtual-1
+cmd="xrandr --addmode Virtual-2 ${width}x${height}"
+echo "Executing: $cmd"
+$cmd
+
+# Set the framebuffer to accommodate both displays
+cmd="xrandr --fb ${new_fb_width}x${new_fb_height} --output Virtual-1 --pos ${width}x0 --panning ${width}x${height}/${new_fb_width}x${new_fb_height}"
+echo "Executing: $cmd"
+$cmd
 
 # Position Virtual-2 to the right of Virtual-1
-xrandr --output Virtual-2 --mode 1920x1080 --right-of Virtual-1 
+cmd="xrandr --output Virtual-2 --mode ${width}x${height} --right-of Virtual-1"
+echo "Executing: $cmd"
+$cmd
 
+echo "Virtual display setup complete!"
